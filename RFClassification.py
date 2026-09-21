@@ -3,6 +3,7 @@ import glob
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
+from utilities import load_scenarios
 
 # CONFIGURATION
 DATA_DIRS = {
@@ -74,15 +75,6 @@ train_scenarios, temp_scenarios = train_test_split(
     stratify=scenario_df["type"]
 )
 
-
-# Le bloc temporaire représente 30 % du dataset.
-# On veut ensuite le diviser en :
-#
-# 15 % validation
-# 15 % test
-#
-# donc 50 / 50 dans le bloc temporaire.
-
 val_scenarios, test_scenarios = train_test_split(
     temp_scenarios,
     test_size=0.5,
@@ -109,3 +101,43 @@ print(val_scenarios["type"].value_counts())
 
 print("\nRépartition TEST")
 print(test_scenarios["type"].value_counts())
+
+
+# LOAD DATA
+X_train, y_train = load_scenarios(
+    train_scenarios
+)
+
+X_val, y_val = load_scenarios(
+    val_scenarios
+)
+
+X_test, y_test = load_scenarios(
+    test_scenarios
+)
+
+
+print("\n" + "=" * 60)
+print("NOMBRE D'ÉCHANTILLONS")
+print("=" * 60)
+
+print(f"Train      : {len(X_train)}")
+print(f"Validation : {len(X_val)}")
+print(f"Test       : {len(X_test)}")
+
+
+print("\nDistribution des labels - TRAIN")
+print(y_train.value_counts())
+print(y_train.value_counts(normalize=True))
+
+
+print("\nDistribution des labels - VALIDATION")
+print(y_val.value_counts())
+print(y_val.value_counts(normalize=True))
+
+
+print("\nDistribution des labels - TEST")
+print(y_test.value_counts())
+print(y_test.value_counts(normalize=True))
+
+
