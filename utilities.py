@@ -1,4 +1,3 @@
-from RFClassification import FEATURES, TARGET
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -10,6 +9,28 @@ from sklearn.metrics import (
 )
 import pandas as pd
 import numpy as np
+
+# CONFIGURATION
+DATA_DIRS = {
+    "Faults": "Data/filtered/Faults",
+    "Nominal": "Data/filtered/Nominal",
+}
+
+FEATURES = [
+    "T_filtered",
+    "P_filtered",
+    "dT_filtered_dt",
+    "dP_filtered_dt",
+]
+
+TARGET = "label"
+
+TEST_SIZE = 0.15
+VAL_SIZE = 0.15
+
+RANDOM_STATE = 42
+
+MODEL_OUTPUT_PATH = "outputs/models/random_forest_baseline.joblib"
 
 
 # LOADING DATA

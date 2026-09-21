@@ -4,32 +4,18 @@ import pandas as pd
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from utilities import load_scenarios, evaluate_model
+from utilities import (
+    load_scenarios,
+    evaluate_model,
+    DATA_DIRS,
+    FEATURES,
+    TEST_SIZE,
+    VAL_SIZE,
+    RANDOM_STATE,
+    MODEL_OUTPUT_PATH,
+)
 
 import joblib
-
-# CONFIGURATION
-DATA_DIRS = {
-    "Faults": "Data/filtered/Faults",
-    "Nominal": "Data/filtered/Nominal",
-}
-
-FEATURES = [
-    "T_filtered",
-    "P_filtered",
-    "dT_filtered_dt",
-    "dP_filtered_dt",
-]
-
-TARGET = "label"
-
-TEST_SIZE = 0.15
-VAL_SIZE = 0.15
-
-RANDOM_STATE = 42
-
-MODEL_OUTPUT_PATH = "outputs/models/random_forest_baseline.joblib"
-
 
 # RECUPERATION DES SCENARIOS
 fault_files = glob.glob(os.path.join(DATA_DIRS["Faults"], "*.csv"))
