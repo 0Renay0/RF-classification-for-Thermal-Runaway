@@ -2,8 +2,11 @@ import os
 import glob
 import pandas as pd
 
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from utilities import load_scenarios
+from utilities import load_scenarios, evaluate_model
+
+import joblib
 
 # CONFIGURATION
 DATA_DIRS = {
@@ -139,5 +142,80 @@ print(y_val.value_counts(normalize=True))
 print("\nDistribution des labels - TEST")
 print(y_test.value_counts())
 print(y_test.value_counts(normalize=True))
+
+# RANDOM FOREST
+model = RandomForestClassifier(
+
+    n_estimators=300,
+
+    max_depth=None,
+
+    min_samples_split=2,
+
+    min_samples_leaf=1,
+
+    max_features="sqrt",
+
+    # Utile si label 1 est moins fréquent que label 0
+    class_weight="balanced",
+
+    random_state=RANDOM_STATE,
+
+    n_jobs=-1
+)
+
+
+# ENTRAINEMENT
+print("\n" + "=" * 60)
+print("ENTRAINEMENT RANDOM FOREST")
+print("=" * 60)
+
+model.fit(
+    X_train,
+    y_train
+)
+
+# EVALUATION
+evaluate_model(
+    model,
+    X_train,
+    y_train,
+    "TRAIN"
+)
+
+evaluate_model(
+    model,
+    X_val,
+    y_val,
+    "VALIDATION"
+)
+
+evaluate_model(
+    model,
+    X_test,
+    y_test,
+    "TEST"
+)
+
+# IMPORTANCE DES VARIABLES
+feature_importance = pd.DataFrame({
+
+    "feature": FEATURES,
+
+    "importance": model.feature_importances_
+
+})
+
+feature_importance = feature_importance.sort_values(
+    by="importance",
+    ascending=False
+)
+
+
+print("\n" + "=" * 60)
+print("IMPORTANCE DES VARIABLES")
+print("=" * 60)
+
+print(feature_importance)
 
 
