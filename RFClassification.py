@@ -32,13 +32,9 @@ MODEL_OUTPUT_PATH = "outputs/models/random_forest_baseline.joblib"
 
 
 # RECUPERATION DES SCENARIOS
-fault_files = glob.glob(
-    os.path.join(DATA_DIRS["Faults"], "*.csv")
-)
+fault_files = glob.glob(os.path.join(DATA_DIRS["Faults"], "*.csv"))
 
-nominal_files = glob.glob(
-    os.path.join(DATA_DIRS["Nominal"], "*.csv")
-)
+nominal_files = glob.glob(os.path.join(DATA_DIRS["Nominal"], "*.csv"))
 
 
 print("=" * 60)
@@ -52,30 +48,24 @@ print(f"Nominal : {len(nominal_files)}")
 scenarios = []
 
 for file_path in fault_files:
-    scenarios.append({
-        "path": file_path,
-        "type": "Fault"
-    })
+    scenarios.append({"path": file_path, "type": "Fault"})
 
 for file_path in nominal_files:
-    scenarios.append({
-        "path": file_path,
-        "type": "Nominal"
-    })
+    scenarios.append({"path": file_path, "type": "Nominal"})
 
 
 scenario_df = pd.DataFrame(scenarios)
 
 # SPLIT TRAIN/VAL/TEST >>>> SPLIT PAR SCENARIO
-# 70% TRAIN 
-# 30% VAL/TEST 
+# 70% TRAIN
+# 30% VAL/TEST
 
 train_scenarios, temp_scenarios = train_test_split(
     scenario_df,
     test_size=TEST_SIZE + VAL_SIZE,
     random_state=RANDOM_STATE,
     shuffle=True,
-    stratify=scenario_df["type"]
+    stratify=scenario_df["type"],
 )
 
 val_scenarios, test_scenarios = train_test_split(
@@ -83,7 +73,7 @@ val_scenarios, test_scenarios = train_test_split(
     test_size=0.5,
     random_state=RANDOM_STATE,
     shuffle=True,
-    stratify=temp_scenarios["type"]
+    stratify=temp_scenarios["type"],
 )
 
 
@@ -107,17 +97,11 @@ print(test_scenarios["type"].value_counts())
 
 
 # LOAD DATA
-X_train, y_train = load_scenarios(
-    train_scenarios
-)
+X_train, y_train = load_scenarios(train_scenarios)
 
-X_val, y_val = load_scenarios(
-    val_scenarios
-)
+X_val, y_val = load_scenarios(val_scenarios)
 
-X_test, y_test = load_scenarios(
-    test_scenarios
-)
+X_test, y_test = load_scenarios(test_scenarios)
 
 
 print("\n" + "=" * 60)
@@ -145,23 +129,15 @@ print(y_test.value_counts(normalize=True))
 
 # RANDOM FOREST
 model = RandomForestClassifier(
-
     n_estimators=300,
-
     max_depth=None,
-
     min_samples_split=2,
-
     min_samples_leaf=1,
-
     max_features="sqrt",
-
     # Utile si label 1 est moins fréquent que label 0
     class_weight="balanced",
-
     random_state=RANDOM_STATE,
-
-    n_jobs=-1
+    n_jobs=-1,
 )
 
 
@@ -170,46 +146,21 @@ print("\n" + "=" * 60)
 print("ENTRAINEMENT RANDOM FOREST")
 print("=" * 60)
 
-model.fit(
-    X_train,
-    y_train
-)
+model.fit(X_train, y_train)
 
 # EVALUATION
-evaluate_model(
-    model,
-    X_train,
-    y_train,
-    "TRAIN"
-)
+evaluate_model(model, X_train, y_train, "TRAIN")
 
-evaluate_model(
-    model,
-    X_val,
-    y_val,
-    "VALIDATION"
-)
+evaluate_model(model, X_val, y_val, "VALIDATION")
 
-evaluate_model(
-    model,
-    X_test,
-    y_test,
-    "TEST"
-)
+evaluate_model(model, X_test, y_test, "TEST")
 
 # IMPORTANCE DES VARIABLES
-feature_importance = pd.DataFrame({
-
-    "feature": FEATURES,
-
-    "importance": model.feature_importances_
-
-})
-
-feature_importance = feature_importance.sort_values(
-    by="importance",
-    ascending=False
+feature_importance = pd.DataFrame(
+    {"feature": FEATURES, "importance": model.feature_importances_}
 )
+
+feature_importance = feature_importance.sort_values(by="importance", ascending=False)
 
 
 print("\n" + "=" * 60)
@@ -219,17 +170,8 @@ print("=" * 60)
 print(feature_importance)
 
 # SAUVEGARDE
-os.makedirs(
-    os.path.dirname(MODEL_OUTPUT_PATH),
-    exist_ok=True
-)
+os.makedirs(os.path.dirname(MODEL_OUTPUT_PATH), exist_ok=True)
 
-joblib.dump(
-    model,
-    MODEL_OUTPUT_PATH
-)
+joblib.dump(model, MODEL_OUTPUT_PATH)
 
-print(
-    f"\nModèle sauvegardé : "
-    f"{MODEL_OUTPUT_PATH}"
-)
+print(f"\nModèle sauvegardé : {MODEL_OUTPUT_PATH}")
