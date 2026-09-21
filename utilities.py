@@ -6,9 +6,13 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     roc_auc_score,
+    ConfusionMatrixDisplay,
+    RocCurveDisplay,
 )
 import pandas as pd
 import numpy as np
+import matplotlib as plt
+import os
 
 # CONFIGURATION
 DATA_DIRS = {
@@ -109,3 +113,70 @@ def evaluate_model(model, X, y, dataset_name):
     print("Confusion matrix:")
 
     print(confusion_matrix(y, y_pred))
+
+
+def plot_confusion_matrix(model, X, y, dataset_name):
+    fig, ax = plt.subplots(figsize=(6, 5))
+
+    ConfusionMatrixDisplay.from_estimator(model, X, y, ax=ax, values_format="d")
+
+    ax.set_title(f"Matrice de confusion - {dataset_name}")
+
+    plt.tight_layout()
+    PLOTS_DIR = "outputs/plots"
+    os.makedirs(PLOTS_DIR, exist_ok=True)
+
+    plt.savefig(
+        os.path.join(PLOTS_DIR, f"confusion_matrix_{dataset_name.lower()}.png"), dpi=300
+    )
+
+    plt.show()
+    plt.close()
+
+
+def plot_roc_curve(model, X, y, dataset_name):
+    if len(np.unique(y)) != 2:
+        print(f"ROC non tracée pour {dataset_name}: une seule classe présente.")
+        return
+
+    fig, ax = plt.subplots(figsize=(6, 5))
+
+    RocCurveDisplay.from_estimator(model, X, y, ax=ax)
+
+    ax.set_title(f"Courbe ROC - {dataset_name}")
+
+    plt.tight_layout()
+    PLOTS_DIR = "outputs/plots"
+    os.makedirs(PLOTS_DIR, exist_ok=True)
+    plt.savefig(os.path.join(PLOTS_DIR, f"roc_{dataset_name.lower()}.png"), dpi=300)
+
+    plt.show()
+    plt.close()
+
+
+def plot_probability_distribution(model, X, y, dataset_name):
+    y_proba = model.predict_proba(X)[:, 1]
+
+    plt.figure(figsize=(8, 5))
+
+    plt.hist(y_proba[y.to_numpy() == 0], bins=50, alpha=0.6, label="Label 0")
+
+    plt.hist(y_proba[y.to_numpy() == 1], bins=50, alpha=0.6, label="Label 1")
+
+    plt.xlabel("Probabilité prédite de la classe 1")
+    plt.ylabel("Nombre d'échantillons")
+
+    plt.title(f"Distribution des probabilités - {dataset_name}")
+
+    plt.legend()
+
+    plt.tight_layout()
+
+    PLOTS_DIR = "outputs/plots"
+    os.makedirs(PLOTS_DIR, exist_ok=True)
+    plt.savefig(
+        os.path.join(PLOTS_DIR, f"probabilities_{dataset_name.lower()}.png"), dpi=300
+    )
+
+    plt.show()
+    plt.close()

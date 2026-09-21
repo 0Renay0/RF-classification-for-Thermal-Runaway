@@ -1,9 +1,13 @@
 import os
 import glob
 import pandas as pd
+import matplotlib as plt
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
+
+
+from sklearn.tree import plot_tree
 from utilities import (
     load_scenarios,
     evaluate_model,
@@ -13,6 +17,9 @@ from utilities import (
     VAL_SIZE,
     RANDOM_STATE,
     MODEL_OUTPUT_PATH,
+    plot_confusion_matrix,
+    plot_roc_curve,
+    plot_probability_distribution,
 )
 
 import joblib
@@ -134,6 +141,9 @@ print("=" * 60)
 
 model.fit(X_train, y_train)
 
+PLOTS_DIR = "outputs/plots"
+os.makedirs(PLOTS_DIR, exist_ok=True)
+
 # EVALUATION
 evaluate_model(model, X_train, y_train, "TRAIN")
 
@@ -154,6 +164,55 @@ print("IMPORTANCE DES VARIABLES")
 print("=" * 60)
 
 print(feature_importance)
+
+plt.figure(figsize=(8, 5))
+
+plt.barh(feature_importance["feature"], feature_importance["importance"])
+
+plt.xlabel("Importance")
+plt.ylabel("Variable")
+plt.title("Importance des variables - Random Forest")
+
+plt.gca().invert_yaxis()
+
+plt.tight_layout()
+
+plt.savefig(os.path.join(PLOTS_DIR, "feature_importance.png"), dpi=300)
+
+plt.show()
+plt.close()
+
+plot_confusion_matrix(model, X_train, y_train, "TRAIN")
+plot_confusion_matrix(model, X_val, y_val, "VALIDATION")
+plot_confusion_matrix(model, X_test, y_test, "TEST")
+
+plot_roc_curve(model, X_train, y_train, "TRAIN")
+plot_roc_curve(model, X_val, y_val, "VALIDATION")
+plot_roc_curve(model, X_test, y_test, "TEST")
+
+tree_0 = model.estimators_[0]
+plt.figure(figsize=(24, 12))
+
+plot_tree(
+    tree_0,
+    feature_names=FEATURES,
+    class_names=["0", "1"],
+    filled=True,
+    rounded=True,
+    max_depth=3,
+    fontsize=8,
+)
+
+plt.title("Exemple : arbre n°0 du Random Forest")
+
+plt.tight_layout()
+
+plt.savefig(os.path.join(PLOTS_DIR, "tree_example_0.png"), dpi=300)
+
+plt.show()
+plt.close()
+
+plot_probability_distribution(model, X_test, y_test, "TEST")
 
 # SAUVEGARDE
 os.makedirs(os.path.dirname(MODEL_OUTPUT_PATH), exist_ok=True)
