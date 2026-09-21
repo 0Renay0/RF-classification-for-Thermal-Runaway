@@ -1,5 +1,8 @@
 import os
 import glob
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
 
 # CONFIGURATION
 DATA_DIRS = {
@@ -40,3 +43,69 @@ print("=" * 60)
 
 print(f"Faults  : {len(fault_files)}")
 print(f"Nominal : {len(nominal_files)}")
+
+# CREATION DE LA LISTE DES SCENARIOS
+scenarios = []
+
+for file_path in fault_files:
+    scenarios.append({
+        "path": file_path,
+        "type": "Fault"
+    })
+
+for file_path in nominal_files:
+    scenarios.append({
+        "path": file_path,
+        "type": "Nominal"
+    })
+
+
+scenario_df = pd.DataFrame(scenarios)
+
+# SPLIT TRAIN/VAL/TEST >>>> SPLIT PAR SCENARIO
+# 70% TRAIN 
+# 30% VAL/TEST 
+
+train_scenarios, temp_scenarios = train_test_split(
+    scenario_df,
+    test_size=TEST_SIZE + VAL_SIZE,
+    random_state=RANDOM_STATE,
+    shuffle=True,
+    stratify=scenario_df["type"]
+)
+
+
+# Le bloc temporaire représente 30 % du dataset.
+# On veut ensuite le diviser en :
+#
+# 15 % validation
+# 15 % test
+#
+# donc 50 / 50 dans le bloc temporaire.
+
+val_scenarios, test_scenarios = train_test_split(
+    temp_scenarios,
+    test_size=0.5,
+    random_state=RANDOM_STATE,
+    shuffle=True,
+    stratify=temp_scenarios["type"]
+)
+
+
+print("\n" + "=" * 60)
+print("SPLIT PAR SCÉNARIO")
+print("=" * 60)
+
+print(f"Train      : {len(train_scenarios)} scénarios")
+print(f"Validation : {len(val_scenarios)} scénarios")
+print(f"Test       : {len(test_scenarios)} scénarios")
+
+
+print("\nRépartition TRAIN")
+print(train_scenarios["type"].value_counts())
+
+print("\nRépartition VALIDATION")
+print(val_scenarios["type"].value_counts())
+
+print("\nRépartition TEST")
+print(test_scenarios["type"].value_counts())
