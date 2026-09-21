@@ -218,4 +218,18 @@ print("=" * 60)
 
 print(feature_importance)
 
+# SAUVEGARDE
+os.makedirs(
+    os.path.dirname(MODEL_OUTPUT_PATH),
+    exist_ok=True
+)
 
+joblib.dump(
+    model,
+    MODEL_OUTPUT_PATH
+)
+
+print(
+    f"\nModèle sauvegardé : "
+    f"{MODEL_OUTPUT_PATH}"
+)
