@@ -8,5 +8,4 @@ __pycache__/
 *.pkl
 *.joblib
 *.pt
-outputs/
 .venv/
