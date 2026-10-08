@@ -19,13 +19,20 @@ DATA_DIRS = {
     "Faults": "Data/filtered/Faults",
     "Nominal": "Data/filtered/Nominal",
 }
-
 FEATURES = [
     "T_filtered",
     "P_filtered",
     "dT_filtered_dt",
     "dP_filtered_dt",
 ]
+"""
+FEATURES = [
+    "Tr_C",
+    "Pression_ideal_bar",
+    "dT_dt",
+    "dP_dt",
+]
+"""
 
 TARGET = "label"
 
