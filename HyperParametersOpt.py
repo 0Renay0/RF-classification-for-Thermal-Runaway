@@ -46,3 +46,68 @@ def main():
         raise ValueError("The target variable must have exactly two classes for binary classification.")
 
 
+def objective(trial):
+    params = {
+        'n_estimators': trial.suggest_int('n_estimators', 100, 600, step=50),
+        'max_depth': trial.suggest_int('max_depth', [None, 5, 10, 15, 20, 30, 40]),
+        'min_samples_split': trial.suggest_int('min_samples_split', 2, 20),
+        'min_samples_leaf': trial.suggest_int('min_samples_leaf', 1, 10),
+        'max_features': trial.suggest_categorical('max_features', ['auto', 'sqrt', 'log2']),
+        'bootstrap': trial.suggest_categorical('bootstrap', [True, False]),
+        'random_state': RANDOM_STATE,
+        'n_jobs': -1,
+    }
+
+    clf = RandomForestClassifier(**params)
+    clf.fit(X_train, y_train)
+    pred = clf.predict(X_val)
+    return float(f1_score(y_val, pred, pos_label=1, zero_division=0))
+
+
+study = optuna.create_study(
+    study_name="RandomForestClassifier_Optimization",
+    direction="maximize",
+    sampler=optuna.samplers.TPESampler(seed=RANDOM_STATE)
+    storage=f'sqlite:///{OUTPUT_DIR / "study.db".resolve().as_posix()}',
+    load_if_exists=True,
+)
+study.optimize(objective, n_trials=N_TRIALS, gc_after_trial=True)
+print(f'best F1 score: study.best_value')
+print(f'best params: {study.best_params}')
+study.trials_dataframe().to_csv(OUTPUT_DIR / "trials.csv", index=False)
+
+# the model uses train and validation sets, the test set is used for final evaluation
+X_fit = pd.concat([X_train, X_val], ignore_index=True)
+y_fit = pd.concat([y_train, y_val], ignore_index=True)
+final_model = RandomForestClassifier(**study.best_params, random_state=RANDOM_STATE, n_jobs=-1)
+final_model.fit(X_fit, y_fit)
+pred = final_model.predict(X_test)
+proba = final_model.predict_proba(X_test)[:, list(final_model.classes_).index(1)]
+metrics = {
+    'accuracy': float(accuracy_score(y_test, pred)),
+    'precision': float(precision_score(y_test,pred, pos_label=1, zero_division=0)),
+    'recall': float(recall_score(y_test, pred, pos_label=1, zero_division=0)),
+    'f1': float(f1_score(y_test, pred, pos_label=1, zero_division=0)),
+    'roc_auc': float(roc_auc_score(y_test, pred)), 
+}
+
+print('\nMetrics TEST:', json.dumps(metrics, indent=2))
+print(classification_report(y_test, pred, zero_division=0))
+print('Confusion Matrix:\n', confusion_matrix(y_test, pred))
+joblib.dump(final_model, OUTPUT_DIR / 'random_forest_optuna.joblib')
+(OUTPUT_DIR / 'results.json').write_text(
+    json.dumps({
+        'Validation_best_f1': study.best_value,
+        'best_params': study.best_params,
+        'test_metrics': metrics,
+        'features': FEATURES,
+        'n_train_scenarios': len(train_s),
+        'n_validation_scenarios': len(val_s),
+        'n_test_scenarios': len(test_s)},
+        indent=2),
+        encoding='utf-8'
+)
+
+
+if __name__ == '__main__':
+    main()
