@@ -26,3 +26,23 @@ def collect_scenarios():
         raise ValueError("No scenarios found in the specified directories.")
     return df
 
+
+def main():
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    scenarios = collect_scenarios()
+    train_s, temp_s = train_test_split(scenarios, test_size=VAL_SIZE + TEST_SIZE, random_state=RANDOM_STATE, shuffle=True, stratify=scenarios['type'])
+    # Split the remaining data into validation and test sets
+    test_fraction_in_temp = TEST_SIZE / (VAL_SIZE + TEST_SIZE)
+    val_s, test_s = train_test_split(temp_s, test_size=test_fraction_in_temp, random_state=RANDOM_STATE, shuffle=True, stratify=temp_s['type'])
+
+    for name, group in [('train', train_s), ('val', val_s), ('test', test_s)]:
+        group.to_csv(OUTPUT_DIR / f"scenarios_{name}.csv", index=False)
+        print(f'{name}: {len(group)} scenarios')
+
+    X_train, y_train = load_scenarios(train_s)
+    X_val, y_val = load_scenarios(val_s)
+    X_test, y_test = load_scenarios(test_s)
+    if y_train.nunique() != 2 or y_val.nunique() != 2 or y_test.nunique() != 2:
+        raise ValueError("The target variable must have exactly two classes for binary classification.")
+
+
