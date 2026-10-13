@@ -1,0 +1,28 @@
+{
+  "validation_best_f1": 0.9561862798393942,
+  "best_params": {
+    "n_estimators": 300,
+    "max_depth": 30,
+    "min_samples_split": 8,
+    "min_samples_leaf": 1,
+    "max_features": "sqrt",
+    "class_weight": null,
+    "bootstrap": false
+  },
+  "test_metrics": {
+    "accuracy": 0.9820739555792545,
+    "precision": 0.9868271007825096,
+    "recall": 0.9232750216139654,
+    "f1": 0.9539938227607507,
+    "roc_auc": 0.992093647808484
+  },
+  "features": [
+    "T_filtered",
+    "P_filtered",
+    "dT_filtered_dt",
+    "dP_filtered_dt"
+  ],
+  "n_train_scenarios": 501,
+  "n_validation_scenarios": 108,
+  "n_test_scenarios": 108
+}
