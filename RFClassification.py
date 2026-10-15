@@ -120,19 +120,18 @@ print("\nDistribution des labels - TEST")
 print(y_test.value_counts())
 print(y_test.value_counts(normalize=True))
 
-# RANDOM FOREST
+# RANDOM FOREST -- MEILLEURE CONFIGURATION OPTUNA
 model = RandomForestClassifier(
     n_estimators=300,
-    max_depth=None,
-    min_samples_split=2,
+    max_depth=30,
+    min_samples_split=8,
     min_samples_leaf=1,
     max_features="sqrt",
-    # Utile si label 1 est moins fréquent que label 0
-    class_weight="balanced",
+    class_weight=None,
+    bootstrap=False,
     random_state=RANDOM_STATE,
     n_jobs=-1,
 )
-
 
 # ENTRAINEMENT
 print("\n" + "=" * 60)
